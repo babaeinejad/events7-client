@@ -5,7 +5,7 @@ interface IProps {
 }
 export function ActionBar({ handleCreateNewEvent }: IProps) {
   return (
-    <div className="flex w-full h-9 p-2">
+    <div className="flex w-full h-full items-center px-2">
       <Button className="h-9" variant="outlined" onClick={handleCreateNewEvent}>
         Create New Event
       </Button>

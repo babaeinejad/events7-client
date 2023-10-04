@@ -6,7 +6,6 @@ import { AppSidebar } from "sidebar/sidebar";
 import { ThemeProvider } from "@emotion/react";
 import { createTheme } from "@mui/material";
 import { useState } from "react";
-
 function App() {
   const [showSideBar, setShowSideBar] = useState(true);
   const darkTheme = createTheme({
