@@ -1,19 +1,21 @@
+import { ReactNode } from "react";
 import { createBrowserRouter, Link } from "react-router-dom";
+import { Dashboard } from "events/dashboard/dashboard";
 
+const RouteContainer = ({ children }: { children: ReactNode }) => {
+  return (
+    <div className="flex w-full h-full p-4 border-red-300 border bg-gray-200">
+      {children}
+    </div>
+  );
+};
 export const AppRouter = createBrowserRouter([
   {
     path: "/",
     element: (
-      <div>
-        <h1 className="text-3xl text-red-500 font-bold underline">
-          Hello World
-        </h1>
-        <Link to="about">About Us</Link>
-      </div>
+      <RouteContainer>
+        <Dashboard />
+      </RouteContainer>
     ),
-  },
-  {
-    path: "about",
-    element: <div>About</div>,
   },
 ]);
