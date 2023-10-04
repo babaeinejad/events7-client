@@ -3,6 +3,9 @@ export default {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      fontFamily: {
+        fantasy: ["Fantasy", "cursive"],
+      },
       colors: {
         dark: {
           900: "#171717",
