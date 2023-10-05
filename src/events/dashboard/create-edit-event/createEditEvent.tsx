@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 import { OptionItem } from "shared-components/form/types";
 import { ControlledSlider } from "shared-components/form/controlled-form-elements/controlledSlider";
 import { EventsUrl } from "../consts";
-import { CircularProgress } from "@mui/material";
+import { Alert, AlertTitle, CircularProgress } from "@mui/material";
 
 interface IProps {
   open: boolean;
@@ -45,6 +45,8 @@ export function EventFormDialog({
     },
     mode: "all",
   });
+
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (data) {
@@ -91,19 +93,29 @@ export function EventFormDialog({
       ? executeEdit({
           url: EventsUrl + data.id,
           data: eventData,
-        }).then((result) => {
-          if (itemEditted) {
-            itemEditted(result.data);
-          }
         })
+          .then((result) => {
+            setError("");
+            if (itemEditted) {
+              itemEditted(result.data);
+            }
+          })
+          .catch((err) => {
+            setError(err?.response?.data?.message || err.message);
+          })
       : executeCreate({
           url: EventsUrl,
           data: eventData,
-        }).then((result) => {
-          if (itemCreated) {
-            itemCreated(result.data);
-          }
-        });
+        })
+          .then((result) => {
+            setError("");
+            if (itemCreated) {
+              itemCreated(result.data);
+            }
+          })
+          .catch((err) => {
+            setError(err?.response?.data?.message || err.message);
+          });
   }
 
   function onCancelClicked() {
@@ -117,6 +129,12 @@ export function EventFormDialog({
           {isEdit ? "Modify Event Information" : "Create a New Event"}
         </DialogTitle>
         <DialogContent className="w-full sm:w-[600px]">
+          {error && (
+            <Alert severity="error">
+              <AlertTitle>Error</AlertTitle>
+              {error}
+            </Alert>
+          )}
           <div className="flex gap-6 mt-4 w-full h-full flex-col">
             <ControlledInput
               name="name"

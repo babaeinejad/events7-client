@@ -10,7 +10,8 @@ import { EventFormDialog } from "events/dashboard/create-edit-event/createEditEv
 import { Event7FormType } from "events/dashboard/create-edit-event/formSchema";
 import { ActionBar } from "../actionbar/actionbar";
 import classNames from "classnames";
-import { useTheme } from "@mui/material";
+import { Alert, AlertTitle, useTheme } from "@mui/material";
+import { AxiosError } from "axios";
 
 export function EventsGrid() {
   const theme = useTheme();
@@ -19,15 +20,15 @@ export function EventsGrid() {
   const [selectedEvent, setSelectedEvent] = useState<Event7FormType | null>(
     null
   );
+  const [error, setError] = useState("");
   const gridRef = useRef<AgGridReact | null>(null);
-  const [{ data: events, loading }] = useAxios(EventsUrl);
-  const [{ data: deleteResult, loading: deleteLoading }, executeDelete] =
-    useAxios(
-      { method: "DELETE" },
-      {
-        manual: true,
-      }
-    );
+  const [{ data: events, loading, error: eventsError }] = useAxios(EventsUrl);
+  const [{ loading: deleteLoading }, executeDelete] = useAxios(
+    { method: "DELETE" },
+    {
+      manual: true,
+    }
+  );
 
   useEffect(() => {
     if (gridRef?.current?.api) {
@@ -37,15 +38,6 @@ export function EventsGrid() {
       }
     }
   }, [loading, deleteLoading]);
-
-  useEffect(() => {
-    if (gridRef?.current?.api && deleteResult?.id) {
-      const item = gridRef?.current?.api.getRowNode(deleteResult.id);
-      if (item) {
-        gridRef.current.api.applyTransaction({ remove: [item.data] });
-      }
-    }
-  }, [deleteResult]);
 
   function handleDeleteEvent(event: Event7FormType) {
     setSelectedEvent(event);
@@ -101,7 +93,19 @@ export function EventsGrid() {
 
   function handleDelete() {
     if (selectedEvent) {
-      executeDelete({ data: selectedEvent, url: EventsUrl + selectedEvent.id });
+      executeDelete({ data: selectedEvent, url: EventsUrl + selectedEvent.id })
+        .then((result) => {
+          setError("");
+          if (gridRef?.current?.api && result?.data?.id) {
+            const item = gridRef?.current?.api.getRowNode(result.data.id);
+            if (item) {
+              gridRef.current.api.applyTransaction({ remove: [item.data] });
+            }
+          }
+        })
+        .catch((err) => {
+          setError(err?.response?.data?.message || err.message);
+        });
     }
   }
 
@@ -156,11 +160,20 @@ export function EventsGrid() {
       />
 
       <div
-        className={classNames("ag-theme-alpine p-2 flex  h-[calc(100%-36px)]", {
-          "ag-theme-alpine-dark": theme.palette.mode === "dark",
-          "ag-theme-alpine": theme.palette.mode === "light",
-        })}
+        className={classNames(
+          "ag-theme-alpine p-2 flex flex-col  h-[calc(100%-36px)]",
+          {
+            "ag-theme-alpine-dark": theme.palette.mode === "dark",
+            "ag-theme-alpine": theme.palette.mode === "light",
+          }
+        )}
       >
+        {(error || eventsError?.message) && (
+          <Alert severity="error">
+            <AlertTitle>Error</AlertTitle>
+            {error ? error : eventsError?.message}
+          </Alert>
+        )}
         <AgGridReact
           ref={gridRef}
           className="w-full h-full"
