@@ -10,11 +10,3 @@ export enum Evnet7Types {
   LIVEOPS = "LIVEOPS",
   APP = "APP",
 }
-
-export interface Events7 {
-  id: string;
-  priority: number;
-  name: string;
-  description: string;
-  type: ExtendedEvnet7Types | Evnet7Types;
-}

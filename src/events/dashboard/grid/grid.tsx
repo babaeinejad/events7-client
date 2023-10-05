@@ -2,17 +2,22 @@ import { AgGridReact } from "ag-grid-react";
 import { ColDef, GetRowIdParams } from "ag-grid-community";
 import EventActionsCellRenderer from "events/dashboard/grid/cell-renderers/eventActionsCellRenderer";
 import useAxios from "axios-hooks";
-import { deleteConfirmationMessage, eventsUrl } from "events/dashboard/consts";
+import { deleteConfirmationMessage, EventsUrl } from "events/dashboard/consts";
 import { useEffect, useRef, useState } from "react";
 import EventPriorityCellRenderer from "events/dashboard/grid/cell-renderers/eventPriorityCellRenderer";
 import { Confirmation } from "shared-components/confirmation";
-import { Events7 } from "events/types";
+import { EventFormDialog } from "events/dashboard/create-edit-event/createEditEvent";
+import { Event7FormType } from "events/dashboard/create-edit-event/formSchema";
+import { ActionBar } from "../actionbar/actionbar";
 
 export function EventsGrid() {
   const [openConfirmation, setOpenConfirmation] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<Events7 | null>(null);
+  const [openEventFormDialog, setOpenEventFormDialog] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event7FormType | null>(
+    null
+  );
   const gridRef = useRef<AgGridReact | null>(null);
-  const [{ data: events, loading }] = useAxios(eventsUrl);
+  const [{ data: events, loading }] = useAxios(EventsUrl);
   const [{ data: deleteResult, loading: deleteLoading }, executeDelete] =
     useAxios(
       { method: "DELETE" },
@@ -32,8 +37,6 @@ export function EventsGrid() {
 
   useEffect(() => {
     if (gridRef?.current?.api && deleteResult?.id) {
-      // const selectedRowData = gridRef?.current?.api.getSelectedRows();
-
       const item = gridRef?.current?.api.getRowNode(deleteResult.id);
       if (item) {
         gridRef.current.api.applyTransaction({ remove: [item.data] });
@@ -41,13 +44,19 @@ export function EventsGrid() {
     }
   }, [deleteResult]);
 
-  function handleDeleteEvent(event: Events7) {
+  function handleDeleteEvent(event: Event7FormType) {
     setSelectedEvent(event);
     openConfirmationDialog();
   }
 
-  function handleEditEvent(event: Events7) {
+  function handleEditEvent(event: Event7FormType) {
     setSelectedEvent(event);
+    setOpenEventFormDialog(true);
+  }
+
+  function handleCreateEvent() {
+    setSelectedEvent(null);
+    setOpenEventFormDialog(true);
   }
 
   const columnDef: ColDef[] = [
@@ -89,19 +98,43 @@ export function EventsGrid() {
 
   function handleDelete() {
     if (selectedEvent) {
-      executeDelete({ data: selectedEvent, url: eventsUrl + selectedEvent.id });
+      executeDelete({ data: selectedEvent, url: EventsUrl + selectedEvent.id });
     }
   }
 
   function openConfirmationDialog() {
     setOpenConfirmation(true);
   }
+
   function closeConfirmationDialog() {
     setOpenConfirmation(false);
   }
 
+  function onEditted(item: Event7FormType) {
+    setOpenEventFormDialog(false);
+    if (item && gridRef?.current?.api) {
+      gridRef.current.api.applyTransaction({ update: [item] });
+    }
+  }
+
+  function onCreated(item: Event7FormType) {
+    setOpenEventFormDialog(false);
+    if (item && gridRef?.current?.api) {
+      gridRef.current.api.applyTransaction({ add: [item] });
+      const newIndex = gridRef.current.api.getDisplayedRowCount() - 1;
+      gridRef.current.api.ensureIndexVisible(newIndex, "bottom");
+    }
+  }
+
+  function handleCloseEventFormDialog() {
+    setOpenEventFormDialog(false);
+  }
+
   return (
     <>
+      <div className="h-14 flex">
+        <ActionBar handleCreateNewEvent={handleCreateEvent} />
+      </div>
       <Confirmation
         onClosed={closeConfirmationDialog}
         message={deleteConfirmationMessage}
@@ -109,6 +142,14 @@ export function EventsGrid() {
         onConfirmed={handleDelete}
         open={openConfirmation}
         title="Delete Event"
+      />
+
+      <EventFormDialog
+        open={openEventFormDialog}
+        itemEditted={onEditted}
+        itemCreated={onCreated}
+        data={selectedEvent!}
+        handleClose={handleCloseEventFormDialog}
       />
 
       <div className="ag-theme-alpine p-2 flex  h-[calc(100%-36px)] ">
@@ -121,6 +162,7 @@ export function EventsGrid() {
           onGridReady={autoSizeColumns}
           getRowId={getRowId}
           animateRows
+          enableCellChangeFlash
         />
       </div>
     </>
