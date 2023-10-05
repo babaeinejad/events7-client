@@ -17,6 +17,7 @@ export const ControlledInput = ({
   });
   return (
     <TextField
+      className="h-10"
       {...field}
       name={name}
       helperText={error ? error.message : null}
