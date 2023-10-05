@@ -15,18 +15,20 @@ export const ControlledInput = ({
     name: name!,
     control,
   });
+
   return (
-    <TextField
-      className="h-10"
-      {...field}
-      name={name}
-      helperText={error ? error.message : null}
-      size="small"
-      error={!!invalid}
-      fullWidth
-      multiline={multiline}
-      label={label}
-      variant="outlined"
-    />
+    <div className="flex">
+      <TextField
+        {...field}
+        name={name}
+        helperText={error ? error.message : null}
+        size="small"
+        error={!!invalid}
+        fullWidth
+        multiline={multiline}
+        label={label}
+        variant="outlined"
+      />
+    </div>
   );
 };
