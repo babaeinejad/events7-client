@@ -1,4 +1,9 @@
-import { PaletteMode, ThemeProvider, createTheme } from "@mui/material";
+import {
+  PaletteMode,
+  ThemeProvider,
+  createTheme,
+  useMediaQuery,
+} from "@mui/material";
 import { createContext, useMemo, useState } from "react";
 
 export const MaterialContext = createContext({
@@ -10,7 +15,10 @@ export default function MaterialWrapper({
 }: {
   children: React.ReactNode;
 }) {
-  const [mode, setMode] = useState<PaletteMode>("light");
+  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+  const [mode, setMode] = useState<PaletteMode>(
+    prefersDarkMode ? "dark" : "light"
+  );
   const materialUtils = useMemo(
     () => ({
       toggleColorMode: () => {
