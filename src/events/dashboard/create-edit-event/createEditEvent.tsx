@@ -153,7 +153,12 @@ export function EventFormDialog({
         <DialogActions>
           <Button onClick={onCancelClicked}>Cancel</Button>
           <Button
-            disabled={createLoading || editLoading}
+            disabled={
+              createLoading ||
+              editLoading ||
+              !methods.formState.isValid ||
+              !methods.formState.isDirty
+            }
             onClick={onConfirmClicked}
           >
             {createLoading || editLoading ? (

@@ -23,7 +23,7 @@ export function AppSidebar({ showSideBar, onCloseSideBar }: IProps) {
       </div>
       <Divider />
       <List>
-        <ListItem key="Events Manager" disablePadding>
+        <ListItem disablePadding>
           <ListItemButton>
             <ListItemIcon>
               <MouseIcon />
@@ -31,6 +31,7 @@ export function AppSidebar({ showSideBar, onCloseSideBar }: IProps) {
             <ListItemText primary="Events Manager" />
           </ListItemButton>
         </ListItem>
+        <Divider />
       </List>
     </div>
   );

@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+const colors = import("@mui/material/colors");
 export default {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
@@ -7,6 +8,7 @@ export default {
         fantasy: ["Fantasy", "cursive"],
       },
       colors: {
+        ...colors,
         dark: {
           900: "#171717",
           800: "#262626",

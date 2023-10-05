@@ -3,26 +3,20 @@ import { RouterProvider } from "react-router-dom";
 import { AppRouter } from "App.routes";
 import { Navigation } from "navigation/navigation";
 import { AppSidebar } from "sidebar/sidebar";
-import { ThemeProvider } from "@emotion/react";
-import { createTheme } from "@mui/material";
 import { useState } from "react";
+import MaterialWrapper from "material-context/materialContext";
+import CssBaseline from "@mui/material/CssBaseline";
+
 function App() {
   const [showSideBar, setShowSideBar] = useState(true);
-  const darkTheme = createTheme({
-    palette: {
-      mode: "dark",
-      primary: {
-        main: "#1976d2",
-      },
-    },
-  });
 
   function toggleSideBar() {
     setShowSideBar(!showSideBar);
   }
 
   return (
-    <ThemeProvider theme={darkTheme}>
+    <MaterialWrapper>
+      <CssBaseline enableColorScheme />
       <div className="flex flex-col w-full">
         <Navigation onToggleSideBar={toggleSideBar} />
         <div className="flex w-full h-full">
@@ -33,7 +27,7 @@ function App() {
           <RouterProvider router={AppRouter} />
         </div>
       </div>
-    </ThemeProvider>
+    </MaterialWrapper>
   );
 }
 

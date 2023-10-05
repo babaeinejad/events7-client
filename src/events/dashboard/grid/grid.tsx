@@ -9,8 +9,11 @@ import { Confirmation } from "shared-components/confirmation";
 import { EventFormDialog } from "events/dashboard/create-edit-event/createEditEvent";
 import { Event7FormType } from "events/dashboard/create-edit-event/formSchema";
 import { ActionBar } from "../actionbar/actionbar";
+import classNames from "classnames";
+import { useTheme } from "@mui/material";
 
 export function EventsGrid() {
+  const theme = useTheme();
   const [openConfirmation, setOpenConfirmation] = useState(false);
   const [openEventFormDialog, setOpenEventFormDialog] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event7FormType | null>(
@@ -152,7 +155,12 @@ export function EventsGrid() {
         handleClose={handleCloseEventFormDialog}
       />
 
-      <div className="ag-theme-alpine p-2 flex  h-[calc(100%-36px)] ">
+      <div
+        className={classNames("ag-theme-alpine p-2 flex  h-[calc(100%-36px)]", {
+          "ag-theme-alpine-dark": theme.palette.mode === "dark",
+          "ag-theme-alpine": theme.palette.mode === "light",
+        })}
+      >
         <AgGridReact
           ref={gridRef}
           className="w-full h-full"
