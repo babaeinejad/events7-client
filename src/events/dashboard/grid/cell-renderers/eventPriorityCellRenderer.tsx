@@ -6,7 +6,7 @@ export default function EventPriorityCellRenderer(params: ICellRendererParams) {
   const hasHighPriority = params.value > 7;
   return (
     <div
-      className={classnames("flex justify-center gap-1 items-center", {
+      className={classnames("flex relative justify-center gap-1 items-center", {
         "text-red-700 font-bold": hasHighPriority,
       })}
     >
