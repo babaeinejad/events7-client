@@ -11,7 +11,6 @@ import { Event7FormType } from "events/dashboard/create-edit-event/formSchema";
 import { ActionBar } from "../actionbar/actionbar";
 import classNames from "classnames";
 import { Alert, AlertTitle, useTheme } from "@mui/material";
-import { AxiosError } from "axios";
 
 export function EventsGrid() {
   const theme = useTheme();

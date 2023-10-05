@@ -45,6 +45,7 @@ export function Navigation({ onToggleSideBar }: IProps) {
               color="inherit"
               disableTouchRipple
               disableRipple
+              aria-label="toggle-dark-mode"
             >
               {theme.palette.mode === "dark" ? (
                 <span role="img" aria-label="sun">

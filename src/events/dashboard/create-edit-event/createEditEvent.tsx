@@ -169,8 +169,11 @@ export function EventFormDialog({
           </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onCancelClicked}>Cancel</Button>
+          <Button onClick={onCancelClicked} aria-label="Cancel">
+            Cancel
+          </Button>
           <Button
+            aria-label="Confirm"
             disabled={
               createLoading ||
               editLoading ||
