@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  important: true,
   theme: {
     extend: {
       fontFamily: {
@@ -17,6 +18,7 @@ export default {
           300: "#E5E5E5",
           500: "#D4D4D4",
         },
+        darkRed: "#220000",
       },
     },
   },

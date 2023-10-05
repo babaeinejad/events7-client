@@ -1,9 +1,9 @@
 import { AgGridReact } from "ag-grid-react";
-import { ColDef, GetRowIdParams } from "ag-grid-community";
+import { ColDef, GetRowIdParams, RowClassRules } from "ag-grid-community";
 import EventActionsCellRenderer from "events/dashboard/grid/cell-renderers/eventActionsCellRenderer";
 import useAxios from "axios-hooks";
 import { deleteConfirmationMessage, EventsUrl } from "events/dashboard/consts";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import EventPriorityCellRenderer from "events/dashboard/grid/cell-renderers/eventPriorityCellRenderer";
 import { Confirmation } from "shared-components/confirmation";
 import { EventFormDialog } from "events/dashboard/create-edit-event/createEditEvent";
@@ -136,6 +136,22 @@ export function EventsGrid() {
     setOpenEventFormDialog(false);
   }
 
+  const rowClassRules: RowClassRules<Event7FormType> = useMemo(
+    () => ({
+      "bg-red-100 !important": (params) =>
+        (params?.data?.priority || 1) > 7 && theme.palette.mode === "light",
+      "bg-darkRed !important": (params) =>
+        (params?.data?.priority || 1) > 7 && theme.palette.mode === "dark",
+    }),
+    [theme.palette.mode]
+  );
+
+  useEffect(() => {
+    if (gridRef?.current?.api) {
+      gridRef.current.api.redrawRows();
+    }
+  }, [rowClassRules]);
+
   return (
     <>
       <div className="h-14 flex">
@@ -149,7 +165,6 @@ export function EventsGrid() {
         open={openConfirmation}
         title="Delete Event"
       />
-
       <EventFormDialog
         open={openEventFormDialog}
         itemEditted={onEditted}
@@ -157,7 +172,7 @@ export function EventsGrid() {
         data={selectedEvent!}
         handleClose={handleCloseEventFormDialog}
       />
-
+      {/* // TODO: Implement infinite scroll pagination once the ag-grid license is purchased!*/}
       <div
         className={classNames(
           "ag-theme-alpine p-2 flex flex-col  h-[calc(100%-36px)]",
@@ -183,6 +198,9 @@ export function EventsGrid() {
           getRowId={getRowId}
           animateRows
           enableCellChangeFlash
+          rowClassRules={rowClassRules}
+          pagination
+          paginationAutoPageSize
         />
       </div>
     </>
