@@ -10,7 +10,7 @@ export const ControlledInput = ({
 }: IProps) => {
   const {
     field,
-    fieldState: { invalid, isDirty, error },
+    fieldState: { invalid, error },
   } = useController({
     name: name!,
     control,
@@ -21,7 +21,7 @@ export const ControlledInput = ({
       name={name}
       helperText={error ? error.message : null}
       size="small"
-      error={!!invalid && isDirty}
+      error={!!invalid}
       fullWidth
       multiline={multiline}
       label={label}
