@@ -11,6 +11,7 @@ export function ActionBar({ handleCreateNewEvent }: IProps) {
         variant="contained"
         color="secondary"
         onClick={handleCreateNewEvent}
+        aria-label="Create New Event"
       >
         Create New Event
       </Button>

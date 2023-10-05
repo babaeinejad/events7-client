@@ -51,8 +51,10 @@ export function Confirmation({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleConfirm}>Confirm</Button>
-        <Button onClick={handleCalcelled} autoFocus>
+        <Button onClick={handleConfirm} aria-label="Confirm">
+          Confirm
+        </Button>
+        <Button onClick={handleCalcelled} autoFocus aria-label="Cancel">
           Cancel
         </Button>
       </DialogActions>

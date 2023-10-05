@@ -19,7 +19,9 @@ export function AppSidebar({ showSideBar, onCloseSideBar }: IProps) {
   const drawer = (
     <div className="pt-14">
       <div className="flex justify-end sm:hidden">
-        <IconButton onClick={onCloseSideBar}>{<ChevronLeftIcon />}</IconButton>
+        <IconButton onClick={onCloseSideBar} aria-label="Close Sidebar">
+          {<ChevronLeftIcon />}
+        </IconButton>
       </div>
       <Divider />
       <List>
@@ -28,7 +30,10 @@ export function AppSidebar({ showSideBar, onCloseSideBar }: IProps) {
             <ListItemIcon>
               <MouseIcon />
             </ListItemIcon>
-            <ListItemText primary="Events Manager" />
+            <ListItemText
+              primary="Events Manager"
+              aria-label="Events Manager"
+            />
           </ListItemButton>
         </ListItem>
         <Divider />

@@ -20,6 +20,7 @@ export const ControlledSlider = ({
       <InputLabel id="demo-simple-select-label">{label}</InputLabel>
       <FormControl fullWidth>
         <Slider
+          className="h-10"
           {...field}
           aria-label="Priority"
           valueLabelDisplay="auto"
