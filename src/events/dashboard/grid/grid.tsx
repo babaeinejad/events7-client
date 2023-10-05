@@ -138,9 +138,9 @@ export function EventsGrid() {
 
   const rowClassRules: RowClassRules<Event7FormType> = useMemo(
     () => ({
-      "bg-red-100 !important": (params) =>
+      "red-rows": (params) =>
         (params?.data?.priority || 1) > 7 && theme.palette.mode === "light",
-      "bg-darkRed !important": (params) =>
+      "dark-red-rows": (params) =>
         (params?.data?.priority || 1) > 7 && theme.palette.mode === "dark",
     }),
     [theme.palette.mode]
