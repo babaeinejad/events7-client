@@ -21,21 +21,21 @@ export const ControlledSelect = ({
 }: IProps) => {
   const {
     field,
-    fieldState: { invalid, isDirty, error },
+    fieldState: { invalid, error },
   } = useController({
     name: name!,
     control,
   });
   return (
-    <FormControl fullWidth>
-      <InputLabel id="demo-simple-select-label">{label}</InputLabel>
+    <FormControl size="small" error={invalid}>
+      <InputLabel>{label}</InputLabel>
       <Select
         data-testid={testId}
         disabled={loading}
         {...field}
         label={label}
         name={name}
-        className="h-10"
+        error={!!invalid}
       >
         {options?.map((item) => (
           <MenuItem key={item.value} value={item.value}>
@@ -43,7 +43,7 @@ export const ControlledSelect = ({
           </MenuItem>
         ))}
       </Select>
-      {invalid && isDirty && <FormHelperText>{error?.message}</FormHelperText>}
+      {error?.message && <FormHelperText>{error?.message}</FormHelperText>}
     </FormControl>
   );
 };
