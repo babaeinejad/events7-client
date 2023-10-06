@@ -139,26 +139,6 @@ export function EventFormDialog({
     handleClose();
   }
 
-  const name = methods.watch("name");
-  const description = methods.watch("description");
-  const type = methods.watch("type");
-  const priority = methods.watch("priority");
-
-  useEffect(() => {
-    console.log(methods.getValues());
-    methods.trigger();
-    console.log(
-      "is valid",
-      methods.formState.isValid,
-      "values: ",
-      methods.getValues(),
-      "idDirty",
-      methods.formState.isDirty,
-      "errors",
-      methods.formState.errors
-    );
-  }, [name, description, type, priority, methods]);
-
   return (
     <form {...methods}>
       <Dialog open={open} onClose={handleClose}>
