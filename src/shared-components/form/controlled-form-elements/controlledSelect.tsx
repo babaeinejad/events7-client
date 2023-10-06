@@ -5,7 +5,6 @@ import Select, { SelectProps } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { OptionItem } from "shared-components/form/types";
 import FormHelperText from "@mui/material/FormHelperText";
-import CircularProgress from "@mui/material/CircularProgress";
 
 interface IProps extends SelectProps, FieldValues {
   options: OptionItem[];
@@ -29,10 +28,9 @@ export const ControlledSelect = ({
   });
   return (
     <FormControl fullWidth>
-      <InputLabel id="demo-simple-select-label">
-        {loading ? <CircularProgress size={24} /> : label}
-      </InputLabel>
+      <InputLabel id="demo-simple-select-label">{label}</InputLabel>
       <Select
+        disabled={loading}
         {...field}
         label={label}
         name={name}
