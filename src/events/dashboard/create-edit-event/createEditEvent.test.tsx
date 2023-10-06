@@ -22,7 +22,7 @@ function expectRequiredErrorMessages(expectedCount: number) {
 }
 
 async function waitForValidation() {
-  await new Promise((resolve) => setTimeout(resolve, 100)); // Adjust the delay as needed
+  await new Promise((resolve) => setTimeout(resolve, 100));
 }
 
 describe("Event Create/Edit Dialog", () => {
