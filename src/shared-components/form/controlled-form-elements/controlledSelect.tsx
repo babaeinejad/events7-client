@@ -10,6 +10,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 interface IProps extends SelectProps, FieldValues {
   options: OptionItem[];
   loading: boolean;
+  testId: string;
 }
 export const ControlledSelect = ({
   name,
@@ -17,6 +18,7 @@ export const ControlledSelect = ({
   control,
   options,
   loading,
+  testId,
 }: IProps) => {
   const {
     field,
@@ -30,7 +32,15 @@ export const ControlledSelect = ({
       <InputLabel id="demo-simple-select-label">
         {loading ? <CircularProgress size={24} /> : label}
       </InputLabel>
-      <Select {...field} label={label} name={name} className="h-10">
+      <Select
+        {...field}
+        label={label}
+        name={name}
+        inputProps={{
+          "data-testid": testId,
+        }}
+        className="h-10"
+      >
         {options?.map((item) => (
           <MenuItem key={item.value} value={item.value}>
             {item.label}

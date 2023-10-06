@@ -11,6 +11,7 @@ import { Event7FormType } from "events/dashboard/create-edit-event/formSchema";
 import { ActionBar } from "../actionbar/actionbar";
 import classNames from "classnames";
 import { Alert, AlertTitle, useTheme } from "@mui/material";
+import axios from "axios";
 
 export function EventsGrid() {
   const theme = useTheme();
@@ -21,22 +22,34 @@ export function EventsGrid() {
   );
   const [error, setError] = useState("");
   const gridRef = useRef<AgGridReact | null>(null);
-  const [{ data: events, loading, error: eventsError }] = useAxios(EventsUrl);
-  const [{ loading: deleteLoading }, executeDelete] = useAxios(
-    { method: "DELETE" },
-    {
-      manual: true,
-    }
-  );
+  const [events, setEvents] = useState<Event7FormType[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    axios
+      .get(EventsUrl)
+      .then((response) => {
+        if (response.data) {
+          setEvents(response.data);
+        }
+      })
+      .catch((err) => {
+        setError(err?.response?.data?.message || err.message);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
 
   useEffect(() => {
     if (gridRef?.current?.api) {
       gridRef?.current?.api.hideOverlay();
-      if (loading || deleteLoading) {
+      if (loading) {
         gridRef?.current?.api.showLoadingOverlay();
       }
     }
-  }, [loading, deleteLoading]);
+  }, [loading]);
 
   function handleDeleteEvent(event: Event7FormType) {
     setSelectedEvent(event);
@@ -92,7 +105,12 @@ export function EventsGrid() {
 
   function handleDelete() {
     if (selectedEvent) {
-      executeDelete({ data: selectedEvent, url: EventsUrl + selectedEvent.id })
+      setLoading(true);
+      axios({
+        data: selectedEvent,
+        url: EventsUrl + selectedEvent.id,
+        method: "DELETE",
+      })
         .then((result) => {
           setError("");
           if (gridRef?.current?.api && result?.data?.id) {
@@ -104,6 +122,9 @@ export function EventsGrid() {
         })
         .catch((err) => {
           setError(err?.response?.data?.message || err.message);
+        })
+        .finally(() => {
+          setLoading(false);
         });
     }
   }
@@ -182,10 +203,10 @@ export function EventsGrid() {
           }
         )}
       >
-        {(error || eventsError?.message) && (
+        {error && (
           <Alert severity="error">
             <AlertTitle>Error</AlertTitle>
-            {error ? error : eventsError?.message}
+            {error}
           </Alert>
         )}
         <AgGridReact

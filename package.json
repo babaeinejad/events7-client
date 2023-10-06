@@ -19,7 +19,6 @@
     "ag-grid-community": "^30.2.0",
     "ag-grid-react": "^30.2.0",
     "axios": "^1.5.1",
-    "axios-hooks": "^5.0.0",
     "axios-mock-adapter": "^1.22.0",
     "classnames": "^2.3.2",
     "happy-dom": "^12.9.0",

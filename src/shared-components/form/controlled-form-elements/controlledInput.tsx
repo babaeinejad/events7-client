@@ -1,12 +1,15 @@
 import { FieldValues, useController } from "react-hook-form";
 import TextField, { StandardTextFieldProps } from "@mui/material/TextField";
 
-interface IProps extends StandardTextFieldProps, FieldValues {}
+interface IProps extends StandardTextFieldProps, FieldValues {
+  testId: string;
+}
 export const ControlledInput = ({
   name,
   label,
   control,
   multiline,
+  testId,
 }: IProps) => {
   const {
     field,
@@ -28,6 +31,9 @@ export const ControlledInput = ({
         multiline={multiline}
         label={label}
         variant="outlined"
+        inputProps={{
+          "data-testid": testId,
+        }}
       />
     </div>
   );
