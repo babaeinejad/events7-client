@@ -1,7 +1,6 @@
 import { AgGridReact } from "ag-grid-react";
 import { ColDef, GetRowIdParams, RowClassRules } from "ag-grid-community";
 import EventActionsCellRenderer from "events/dashboard/grid/cell-renderers/eventActionsCellRenderer";
-import useAxios from "axios-hooks";
 import { deleteConfirmationMessage, EventsUrl } from "events/dashboard/consts";
 import { useEffect, useRef, useState, useMemo } from "react";
 import EventPriorityCellRenderer from "events/dashboard/grid/cell-renderers/eventPriorityCellRenderer";
