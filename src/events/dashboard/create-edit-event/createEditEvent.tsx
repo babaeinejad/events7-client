@@ -44,10 +44,10 @@ export function EventFormDialog({
     defaultValues: {
       name: "",
       priority: 1,
-      type: ExtendedEvnet7Types.CROSPROMO,
+      type: "",
       description: "",
     },
-    mode: "all",
+    mode: "onChange",
   });
 
   const [error, setError] = useState("");
@@ -96,45 +96,53 @@ export function EventFormDialog({
   }, [eventTypeEnum]);
 
   function onConfirmClicked() {
-    const eventData = methods?.getValues();
-    setLoading(true);
-    isEdit
-      ? axios({
-          method: "PUT",
-          url: EventsUrl + data.id,
-          data: eventData,
-        })
-          .then((result) => {
-            setError("");
-            if (itemEditted) {
-              itemEditted(result.data);
-            }
-          })
-          .catch((err) => {
-            setError(err?.response?.data?.message || err.message);
-          })
-          .finally(() => {
-            setLoading(false);
-          })
-      : axios({
-          method: "POST",
-          url: EventsUrl,
-          data: eventData,
-        })
-          .then((result) => {
-            setError("");
-            if (itemCreated) {
-              itemCreated(result.data);
-            }
-          })
-          .catch((err) => {
-            setError(err?.response?.data?.message || err.message);
-          })
-          .finally(() => {
-            setLoading(false);
-          });
-  }
+    methods.trigger();
+    if (methods.formState.isValid) {
+      setLoading(true);
+      const eventData = methods?.getValues();
+      isEdit ? executeEdit(eventData) : executeCreate(eventData);
+    }
 
+    function executeEdit(eventData: Event7FormType) {
+      axios({
+        method: "PUT",
+        url: EventsUrl + eventData.id,
+        data: eventData,
+      })
+        .then((result) => {
+          setError("");
+          if (itemEditted) {
+            itemEditted(result.data);
+          }
+        })
+        .catch((err) => {
+          setError(err?.response?.data?.message || err.message);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+
+    function executeCreate(eventData: Event7FormType) {
+      axios({
+        method: "POST",
+        url: EventsUrl,
+        data: eventData,
+      })
+        .then((result) => {
+          setError("");
+          if (itemCreated) {
+            itemCreated(result.data);
+          }
+        })
+        .catch((err) => {
+          setError(err?.response?.data?.message || err.message);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }
   function onCancelClicked() {
     handleClose();
   }
@@ -192,12 +200,9 @@ export function EventFormDialog({
           </Button>
           <Button
             aria-label="Confirm"
-            disabled={
-              loading ||
-              !methods.formState.isValid ||
-              !methods.formState.isDirty
-            }
+            disabled={loading}
             onClick={onConfirmClicked}
+            data-testid="confirm-create-edit"
           >
             {loading ? <CircularProgress size={24} /> : "Confirm"}
           </Button>
