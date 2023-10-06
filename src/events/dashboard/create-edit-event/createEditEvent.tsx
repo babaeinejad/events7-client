@@ -3,7 +3,7 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import { FormProvider, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import {
   CreateEvent7FormSchema,
   Event7FormType,
@@ -69,8 +69,9 @@ export function EventFormDialog({
       url: AvailableEventTypeUrl,
     })
       .then((result) => {
+        console.log("result for tye types are: ", result);
         setAvailableTypesError("");
-        if (result.config) {
+        if (result.data) {
           setEventTypeEnum(result.data);
         }
       })
@@ -138,8 +139,28 @@ export function EventFormDialog({
     handleClose();
   }
 
+  const name = methods.watch("name");
+  const description = methods.watch("description");
+  const type = methods.watch("type");
+  const priority = methods.watch("priority");
+
+  useEffect(() => {
+    console.log(methods.getValues());
+    methods.trigger();
+    console.log(
+      "is valid",
+      methods.formState.isValid,
+      "values: ",
+      methods.getValues(),
+      "idDirty",
+      methods.formState.isDirty,
+      "errors",
+      methods.formState.errors
+    );
+  }, [name, description, type, priority, methods]);
+
   return (
-    <FormProvider {...methods}>
+    <form {...methods}>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{isEdit ? EditEventTitle : CreateEventTitle}</DialogTitle>
         <DialogContent className="w-full sm:w-[600px]">
@@ -202,6 +223,6 @@ export function EventFormDialog({
           </Button>
         </DialogActions>
       </Dialog>
-    </FormProvider>
+    </form>
   );
 }

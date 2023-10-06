@@ -30,13 +30,11 @@ export const ControlledSelect = ({
     <FormControl fullWidth>
       <InputLabel id="demo-simple-select-label">{label}</InputLabel>
       <Select
+        data-testid={testId}
         disabled={loading}
         {...field}
         label={label}
         name={name}
-        inputProps={{
-          "data-testid": testId,
-        }}
         className="h-10"
       >
         {options?.map((item) => (

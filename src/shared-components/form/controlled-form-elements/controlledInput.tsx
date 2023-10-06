@@ -10,6 +10,7 @@ export const ControlledInput = ({
   control,
   multiline,
   testId,
+  placeholder,
 }: IProps) => {
   const {
     field,
@@ -31,9 +32,8 @@ export const ControlledInput = ({
         multiline={multiline}
         label={label}
         variant="outlined"
-        inputProps={{
-          "data-testid": testId,
-        }}
+        data-testid={testId}
+        placeholder={placeholder}
       />
     </div>
   );
