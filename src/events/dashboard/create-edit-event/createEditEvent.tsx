@@ -3,7 +3,7 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import { useForm } from "react-hook-form";
+import { Form, useForm } from "react-hook-form";
 import {
   CreateEvent7FormSchema,
   Event7FormType,
@@ -17,11 +17,12 @@ import {
   AvailableEventTypeUrl,
   CreateEventTitle,
   EditEventTitle,
-} from "./consts";
+  defaultFormValue,
+} from "events/dashboard/create-edit-event/consts";
 import { useEffect, useState } from "react";
 import { OptionItem } from "shared-components/form/types";
 import { ControlledSlider } from "shared-components/form/controlled-form-elements/controlledSlider";
-import { EventsUrl } from "../consts";
+import { EventsUrl } from "events/dashboard/consts";
 import { Alert, AlertTitle, CircularProgress } from "@mui/material";
 import axios from "axios";
 
@@ -39,11 +40,13 @@ export function EventFormDialog({
   itemEditted,
   itemCreated,
 }: IProps) {
+  const [eventsTypeOptions, setEventsTypeOptions] = useState<OptionItem[]>([]);
   const isEdit = hasIdProperty(data) ? data?.id : false;
   const methods = useForm<Event7FormType>({
     resolver: zodResolver(CreateEvent7FormSchema),
     defaultValues: {
-      priority: 1,
+      ...defaultFormValue,
+      type: eventsTypeOptions[0] ? eventsTypeOptions[0].value : "",
     },
     mode: "onChange",
   });
@@ -54,7 +57,6 @@ export function EventFormDialog({
   const [eventTypeEnum, setEventTypeEnum] = useState<
     Evnet7Types | ExtendedEvnet7Types | null
   >(null);
-  const [eventsTypeOptions, setEventsTypeOptions] = useState<OptionItem[]>([]);
 
   useEffect(() => {
     if (data) {
@@ -132,6 +134,7 @@ export function EventFormDialog({
           setError("");
           if (itemCreated) {
             itemCreated(result.data);
+            methods.reset(defaultFormValue);
           }
         })
         .catch((err) => {
@@ -147,7 +150,7 @@ export function EventFormDialog({
   }
 
   return (
-    <form onSubmit={onFormSubmitted} {...methods}>
+    <Form control={methods.control}>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{isEdit ? EditEventTitle : CreateEventTitle}</DialogTitle>
         <DialogContent className="w-full sm:w-[600px]">
@@ -208,6 +211,6 @@ export function EventFormDialog({
           </Button>
         </DialogActions>
       </Dialog>
-    </form>
+    </Form>
   );
 }

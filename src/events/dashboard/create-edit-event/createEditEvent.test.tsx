@@ -42,7 +42,7 @@ describe("Event Create/Edit Dialog", () => {
       const submitButton = screen.getByTestId("confirm-create-edit");
       userEvent.click(submitButton);
       await waitForValidation();
-      expectRequiredErrorMessages(3);
+      expectRequiredErrorMessages(2);
     });
 
     it('removes "required" error messages when input fields are filled', async () => {
@@ -60,11 +60,11 @@ describe("Event Create/Edit Dialog", () => {
 
       userEvent.type(descriptionTextField!, "a");
       await waitForValidation();
-      expectRequiredErrorMessages(2);
+      expectRequiredErrorMessages(1);
 
       userEvent.type(nameTextField!, "a");
       await waitForValidation();
-      expectRequiredErrorMessages(1);
+      expectRequiredErrorMessages(0);
 
       userEvent.click(getByRole(screen.getByTestId("event-type"), "button"));
       await waitForValidation();
