@@ -197,18 +197,20 @@ export function EventFormDialog({
           </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onCancelClicked} aria-label="Cancel">
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            onClick={methods.handleSubmit(onFormSubmitted)}
-            aria-label="Confirm"
-            disabled={loading}
-            data-testid="confirm-create-edit"
-          >
-            {loading ? <CircularProgress size={24} /> : "Confirm"}
-          </Button>
+          <div className="flex p-3 gap-2">
+            <Button onClick={onCancelClicked} aria-label="Cancel">
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              onClick={methods.handleSubmit(onFormSubmitted)}
+              aria-label="Confirm"
+              disabled={loading}
+              data-testid="confirm-create-edit"
+            >
+              {loading ? <CircularProgress size={24} /> : "Confirm"}
+            </Button>
+          </div>
         </DialogActions>
       </Dialog>
     </Form>
