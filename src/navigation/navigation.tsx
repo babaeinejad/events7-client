@@ -19,9 +19,9 @@ export function Navigation({ onToggleSideBar }: IProps) {
       sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
     >
       <Toolbar>
-        <div className="sm:hidden">
+        <div className="md:hidden">
           <IconButton
-            className="sm:hidden"
+            className="md:hidden"
             onClick={onToggleSideBar}
             size="large"
             edge="start"

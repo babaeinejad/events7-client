@@ -3,32 +3,35 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import { useForm } from "react-hook-form";
+import { Form, useForm } from "react-hook-form";
 import {
   CreateEvent7FormSchema,
   Event7FormType,
+  Event7FormTypeWithId,
 } from "events/dashboard/create-edit-event/formSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ControlledInput } from "shared-components/form/controlled-form-elements/controlledInput";
-import { Evnet7Types, ExtendedEvnet7Types } from "events/types";
+import { Evnet7Types, ExtendedEvnet7Types, hasIdProperty } from "events/types";
 import { ControlledSelect } from "shared-components/form/controlled-form-elements/controlledSelect";
 import {
   AvailableEventTypeUrl,
   CreateEventTitle,
   EditEventTitle,
-} from "./consts";
+  defaultFormValue,
+} from "events/dashboard/create-edit-event/consts";
 import { useEffect, useState } from "react";
 import { OptionItem } from "shared-components/form/types";
 import { ControlledSlider } from "shared-components/form/controlled-form-elements/controlledSlider";
-import { EventsUrl } from "../consts";
-import { Alert, AlertTitle, CircularProgress } from "@mui/material";
+import { EventsUrl } from "events/dashboard/consts";
+import { Alert, AlertTitle, CircularProgress, useTheme } from "@mui/material";
 import axios from "axios";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 interface IProps {
   open: boolean;
-  data?: Event7FormType | null;
+  data?: Event7FormType | Event7FormTypeWithId | null;
   handleClose: () => void;
-  itemEditted?: (data: Event7FormType) => void;
+  itemEditted?: (data: Event7FormTypeWithId) => void;
   itemCreated?: (data: Event7FormType) => void;
 }
 export function EventFormDialog({
@@ -38,14 +41,15 @@ export function EventFormDialog({
   itemEditted,
   itemCreated,
 }: IProps) {
-  const isEdit = data?.id;
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
+  const [eventsTypeOptions, setEventsTypeOptions] = useState<OptionItem[]>([]);
+  const isEdit = hasIdProperty(data) ? data?.id : false;
   const methods = useForm<Event7FormType>({
     resolver: zodResolver(CreateEvent7FormSchema),
     defaultValues: {
-      name: "",
-      priority: 1,
-      type: "",
-      description: "",
+      ...defaultFormValue,
+      type: eventsTypeOptions[0] ? eventsTypeOptions[0].value : "",
     },
     mode: "onChange",
   });
@@ -56,10 +60,10 @@ export function EventFormDialog({
   const [eventTypeEnum, setEventTypeEnum] = useState<
     Evnet7Types | ExtendedEvnet7Types | null
   >(null);
-  const [eventsTypeOptions, setEventsTypeOptions] = useState<OptionItem[]>([]);
 
   useEffect(() => {
     if (data) {
+      console.log("data is: ", data);
       methods.reset(data);
     }
   }, [data, methods]);
@@ -69,7 +73,6 @@ export function EventFormDialog({
       url: AvailableEventTypeUrl,
     })
       .then((result) => {
-        console.log("result for tye types are: ", result);
         setAvailableTypesError("");
         if (result.data) {
           setEventTypeEnum(result.data);
@@ -91,19 +94,20 @@ export function EventFormDialog({
       }));
       if (options) {
         setEventsTypeOptions(options);
+        methods.setValue("type", options[0].value);
       }
     }
-  }, [eventTypeEnum]);
+  }, [eventTypeEnum, methods]);
 
-  function onConfirmClicked() {
-    methods.trigger();
-    if (methods.formState.isValid) {
+  async function onFormSubmitted() {
+    const isValid = await methods.trigger();
+    if (isValid) {
       setLoading(true);
       const eventData = methods?.getValues();
       isEdit ? executeEdit(eventData) : executeCreate(eventData);
     }
 
-    function executeEdit(eventData: Event7FormType) {
+    function executeEdit(eventData: Event7FormTypeWithId) {
       axios({
         method: "PUT",
         url: EventsUrl + eventData.id,
@@ -133,6 +137,7 @@ export function EventFormDialog({
           setError("");
           if (itemCreated) {
             itemCreated(result.data);
+            methods.reset(defaultFormValue);
           }
         })
         .catch((err) => {
@@ -148,17 +153,17 @@ export function EventFormDialog({
   }
 
   return (
-    <form {...methods}>
-      <Dialog open={open} onClose={handleClose}>
+    <Form control={methods.control}>
+      <Dialog open={open} fullScreen={fullScreen} onClose={handleClose}>
         <DialogTitle>{isEdit ? EditEventTitle : CreateEventTitle}</DialogTitle>
-        <DialogContent className="w-full sm:w-[600px]">
-          {(error || availableTypesError) && (
-            <Alert severity="error">
-              <AlertTitle>Error</AlertTitle>
-              {error ? error : availableTypesError}
-            </Alert>
-          )}
-          <div className="flex gap-6 mt-4 w-full h-full flex-col">
+        <DialogContent className="w-full justify-center md:w-[600px] pt-6">
+          <div className="flex gap-6 w-full h-full flex-col pt-4">
+            {(error || availableTypesError) && (
+              <Alert severity="error">
+                <AlertTitle>Error</AlertTitle>
+                {error ? error : availableTypesError}
+              </Alert>
+            )}
             <ControlledInput
               name="name"
               label="Name"
@@ -195,19 +200,22 @@ export function EventFormDialog({
           </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onCancelClicked} aria-label="Cancel">
-            Cancel
-          </Button>
-          <Button
-            aria-label="Confirm"
-            disabled={loading}
-            onClick={onConfirmClicked}
-            data-testid="confirm-create-edit"
-          >
-            {loading ? <CircularProgress size={24} /> : "Confirm"}
-          </Button>
+          <div className="flex p-3 gap-2">
+            <Button onClick={onCancelClicked} aria-label="Cancel">
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              onClick={methods.handleSubmit(onFormSubmitted)}
+              aria-label="Confirm"
+              disabled={loading}
+              data-testid="confirm-create-edit"
+            >
+              {loading ? <CircularProgress size={24} /> : "Confirm"}
+            </Button>
+          </div>
         </DialogActions>
       </Dialog>
-    </form>
+    </Form>
   );
 }
