@@ -17,6 +17,7 @@ export default {
           300: "#E5E5E5",
           500: "#D4D4D4",
         },
+        darkRed: "#220000",
       },
     },
   },

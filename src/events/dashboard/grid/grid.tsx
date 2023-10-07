@@ -1,9 +1,8 @@
 import { AgGridReact } from "ag-grid-react";
-import { ColDef, GetRowIdParams } from "ag-grid-community";
+import { ColDef, GetRowIdParams, RowClassRules } from "ag-grid-community";
 import EventActionsCellRenderer from "events/dashboard/grid/cell-renderers/eventActionsCellRenderer";
-import useAxios from "axios-hooks";
 import { deleteConfirmationMessage, EventsUrl } from "events/dashboard/consts";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import EventPriorityCellRenderer from "events/dashboard/grid/cell-renderers/eventPriorityCellRenderer";
 import { Confirmation } from "shared-components/confirmation";
 import { EventFormDialog } from "events/dashboard/create-edit-event/createEditEvent";
@@ -11,6 +10,7 @@ import { Event7FormType } from "events/dashboard/create-edit-event/formSchema";
 import { ActionBar } from "../actionbar/actionbar";
 import classNames from "classnames";
 import { Alert, AlertTitle, useTheme } from "@mui/material";
+import axios from "axios";
 
 export function EventsGrid() {
   const theme = useTheme();
@@ -21,22 +21,34 @@ export function EventsGrid() {
   );
   const [error, setError] = useState("");
   const gridRef = useRef<AgGridReact | null>(null);
-  const [{ data: events, loading, error: eventsError }] = useAxios(EventsUrl);
-  const [{ loading: deleteLoading }, executeDelete] = useAxios(
-    { method: "DELETE" },
-    {
-      manual: true,
-    }
-  );
+  const [events, setEvents] = useState<Event7FormType[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    axios
+      .get(EventsUrl)
+      .then((response) => {
+        if (response.data) {
+          setEvents(response.data);
+        }
+      })
+      .catch((err) => {
+        setError(err?.response?.data?.message || err.message);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
 
   useEffect(() => {
     if (gridRef?.current?.api) {
       gridRef?.current?.api.hideOverlay();
-      if (loading || deleteLoading) {
+      if (loading) {
         gridRef?.current?.api.showLoadingOverlay();
       }
     }
-  }, [loading, deleteLoading]);
+  }, [loading]);
 
   function handleDeleteEvent(event: Event7FormType) {
     setSelectedEvent(event);
@@ -92,7 +104,12 @@ export function EventsGrid() {
 
   function handleDelete() {
     if (selectedEvent) {
-      executeDelete({ data: selectedEvent, url: EventsUrl + selectedEvent.id })
+      setLoading(true);
+      axios({
+        data: selectedEvent,
+        url: EventsUrl + selectedEvent.id,
+        method: "DELETE",
+      })
         .then((result) => {
           setError("");
           if (gridRef?.current?.api && result?.data?.id) {
@@ -104,6 +121,9 @@ export function EventsGrid() {
         })
         .catch((err) => {
           setError(err?.response?.data?.message || err.message);
+        })
+        .finally(() => {
+          setLoading(false);
         });
     }
   }
@@ -136,6 +156,22 @@ export function EventsGrid() {
     setOpenEventFormDialog(false);
   }
 
+  const rowClassRules: RowClassRules<Event7FormType> = useMemo(
+    () => ({
+      "red-rows": (params) =>
+        (params?.data?.priority || 1) > 7 && theme.palette.mode === "light",
+      "dark-red-rows": (params) =>
+        (params?.data?.priority || 1) > 7 && theme.palette.mode === "dark",
+    }),
+    [theme.palette.mode]
+  );
+
+  useEffect(() => {
+    if (gridRef?.current?.api) {
+      gridRef.current.api.redrawRows();
+    }
+  }, [rowClassRules]);
+
   return (
     <>
       <div className="h-14 flex">
@@ -149,7 +185,6 @@ export function EventsGrid() {
         open={openConfirmation}
         title="Delete Event"
       />
-
       <EventFormDialog
         open={openEventFormDialog}
         itemEditted={onEditted}
@@ -157,7 +192,7 @@ export function EventsGrid() {
         data={selectedEvent!}
         handleClose={handleCloseEventFormDialog}
       />
-
+      {/* // TODO: Implement infinite scroll pagination once the ag-grid license is purchased!*/}
       <div
         className={classNames(
           "ag-theme-alpine p-2 flex flex-col  h-[calc(100%-36px)]",
@@ -167,10 +202,10 @@ export function EventsGrid() {
           }
         )}
       >
-        {(error || eventsError?.message) && (
+        {error && (
           <Alert severity="error">
             <AlertTitle>Error</AlertTitle>
-            {error ? error : eventsError?.message}
+            {error}
           </Alert>
         )}
         <AgGridReact
@@ -183,6 +218,9 @@ export function EventsGrid() {
           getRowId={getRowId}
           animateRows
           enableCellChangeFlash
+          rowClassRules={rowClassRules}
+          pagination
+          paginationAutoPageSize
         />
       </div>
     </>

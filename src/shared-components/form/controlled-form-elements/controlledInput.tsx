@@ -1,12 +1,16 @@
 import { FieldValues, useController } from "react-hook-form";
 import TextField, { StandardTextFieldProps } from "@mui/material/TextField";
 
-interface IProps extends StandardTextFieldProps, FieldValues {}
+interface IProps extends StandardTextFieldProps, FieldValues {
+  testId: string;
+}
 export const ControlledInput = ({
   name,
   label,
   control,
   multiline,
+  testId,
+  placeholder,
 }: IProps) => {
   const {
     field,
@@ -15,18 +19,22 @@ export const ControlledInput = ({
     name: name!,
     control,
   });
+
   return (
-    <TextField
-      className="h-10"
-      {...field}
-      name={name}
-      helperText={error ? error.message : null}
-      size="small"
-      error={!!invalid}
-      fullWidth
-      multiline={multiline}
-      label={label}
-      variant="outlined"
-    />
+    <div className="flex">
+      <TextField
+        {...field}
+        name={name}
+        helperText={error ? error.message : null}
+        size="small"
+        error={!!invalid}
+        fullWidth
+        multiline={multiline}
+        label={label}
+        variant="outlined"
+        data-testid={testId}
+        placeholder={placeholder}
+      />
+    </div>
   );
 };

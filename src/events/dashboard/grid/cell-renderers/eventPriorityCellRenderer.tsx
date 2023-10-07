@@ -1,5 +1,4 @@
 import { ICellRendererParams } from "ag-grid-community";
-import PriorityHighIcon from "@mui/icons-material/PriorityHigh";
 import classnames from "classnames";
 
 export default function EventPriorityCellRenderer(params: ICellRendererParams) {
@@ -11,9 +10,6 @@ export default function EventPriorityCellRenderer(params: ICellRendererParams) {
       })}
     >
       {params.value}
-      {hasHighPriority && (
-        <PriorityHighIcon fontSize="inherit" className="text-red-700 text-xs" />
-      )}
     </div>
   );
 }

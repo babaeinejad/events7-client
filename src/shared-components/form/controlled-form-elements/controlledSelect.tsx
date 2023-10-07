@@ -5,11 +5,11 @@ import Select, { SelectProps } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { OptionItem } from "shared-components/form/types";
 import FormHelperText from "@mui/material/FormHelperText";
-import CircularProgress from "@mui/material/CircularProgress";
 
 interface IProps extends SelectProps, FieldValues {
   options: OptionItem[];
   loading: boolean;
+  testId: string;
 }
 export const ControlledSelect = ({
   name,
@@ -17,27 +17,33 @@ export const ControlledSelect = ({
   control,
   options,
   loading,
+  testId,
 }: IProps) => {
   const {
     field,
-    fieldState: { invalid, isDirty, error },
+    fieldState: { invalid, error },
   } = useController({
     name: name!,
     control,
   });
   return (
-    <FormControl fullWidth>
-      <InputLabel id="demo-simple-select-label">
-        {loading ? <CircularProgress size={24} /> : label}
-      </InputLabel>
-      <Select {...field} label={label} name={name} className="h-10">
+    <FormControl size="small" error={invalid}>
+      <InputLabel>{label}</InputLabel>
+      <Select
+        data-testid={testId}
+        disabled={loading}
+        {...field}
+        label={label}
+        name={name}
+        error={!!invalid}
+      >
         {options?.map((item) => (
           <MenuItem key={item.value} value={item.value}>
             {item.label}
           </MenuItem>
         ))}
       </Select>
-      {invalid && isDirty && <FormHelperText>{error?.message}</FormHelperText>}
+      {error?.message && <FormHelperText>{error?.message}</FormHelperText>}
     </FormControl>
   );
 };
