@@ -6,19 +6,23 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import EventPriorityCellRenderer from "events/dashboard/grid/cell-renderers/eventPriorityCellRenderer";
 import { Confirmation } from "shared-components/confirmation";
 import { EventFormDialog } from "events/dashboard/create-edit-event/createEditEvent";
-import { Event7FormType } from "events/dashboard/create-edit-event/formSchema";
+import {
+  Event7FormType,
+  Event7FormTypeWithId,
+} from "events/dashboard/create-edit-event/formSchema";
 import { ActionBar } from "../actionbar/actionbar";
 import classNames from "classnames";
 import { Alert, AlertTitle, useTheme } from "@mui/material";
 import axios from "axios";
+import { hasIdProperty } from "events/types";
 
 export function EventsGrid() {
   const theme = useTheme();
   const [openConfirmation, setOpenConfirmation] = useState(false);
   const [openEventFormDialog, setOpenEventFormDialog] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<Event7FormType | null>(
-    null
-  );
+  const [selectedEvent, setSelectedEvent] = useState<
+    Event7FormType | Event7FormTypeWithId | null
+  >(null);
   const [error, setError] = useState("");
   const gridRef = useRef<AgGridReact | null>(null);
   const [events, setEvents] = useState<Event7FormType[]>([]);
@@ -103,7 +107,7 @@ export function EventsGrid() {
   }
 
   function handleDelete() {
-    if (selectedEvent) {
+    if (selectedEvent && hasIdProperty(selectedEvent)) {
       setLoading(true);
       axios({
         data: selectedEvent,
@@ -136,7 +140,7 @@ export function EventsGrid() {
     setOpenConfirmation(false);
   }
 
-  function onEditted(item: Event7FormType) {
+  function onEditted(item: Event7FormTypeWithId) {
     setOpenEventFormDialog(false);
     if (item && gridRef?.current?.api) {
       gridRef.current.api.applyTransaction({ update: [item] });

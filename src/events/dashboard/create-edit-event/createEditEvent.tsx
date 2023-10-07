@@ -7,10 +7,11 @@ import { useForm } from "react-hook-form";
 import {
   CreateEvent7FormSchema,
   Event7FormType,
+  Event7FormTypeWithId,
 } from "events/dashboard/create-edit-event/formSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ControlledInput } from "shared-components/form/controlled-form-elements/controlledInput";
-import { Evnet7Types, ExtendedEvnet7Types } from "events/types";
+import { Evnet7Types, ExtendedEvnet7Types, hasIdProperty } from "events/types";
 import { ControlledSelect } from "shared-components/form/controlled-form-elements/controlledSelect";
 import {
   AvailableEventTypeUrl,
@@ -26,9 +27,9 @@ import axios from "axios";
 
 interface IProps {
   open: boolean;
-  data?: Event7FormType | null;
+  data?: Event7FormType | Event7FormTypeWithId | null;
   handleClose: () => void;
-  itemEditted?: (data: Event7FormType) => void;
+  itemEditted?: (data: Event7FormTypeWithId) => void;
   itemCreated?: (data: Event7FormType) => void;
 }
 export function EventFormDialog({
@@ -38,14 +39,11 @@ export function EventFormDialog({
   itemEditted,
   itemCreated,
 }: IProps) {
-  const isEdit = data?.id;
+  const isEdit = hasIdProperty(data) ? data?.id : false;
   const methods = useForm<Event7FormType>({
     resolver: zodResolver(CreateEvent7FormSchema),
     defaultValues: {
-      name: "",
       priority: 1,
-      type: "",
-      description: "",
     },
     mode: "onChange",
   });
@@ -60,6 +58,7 @@ export function EventFormDialog({
 
   useEffect(() => {
     if (data) {
+      console.log("data is: ", data);
       methods.reset(data);
     }
   }, [data, methods]);
@@ -69,7 +68,6 @@ export function EventFormDialog({
       url: AvailableEventTypeUrl,
     })
       .then((result) => {
-        console.log("result for tye types are: ", result);
         setAvailableTypesError("");
         if (result.data) {
           setEventTypeEnum(result.data);
@@ -91,19 +89,20 @@ export function EventFormDialog({
       }));
       if (options) {
         setEventsTypeOptions(options);
+        methods.setValue("type", options[0].value);
       }
     }
-  }, [eventTypeEnum]);
+  }, [eventTypeEnum, methods]);
 
-  function onConfirmClicked() {
-    methods.trigger();
-    if (methods.formState.isValid) {
+  async function onFormSubmitted() {
+    const isValid = await methods.trigger();
+    if (isValid) {
       setLoading(true);
       const eventData = methods?.getValues();
       isEdit ? executeEdit(eventData) : executeCreate(eventData);
     }
 
-    function executeEdit(eventData: Event7FormType) {
+    function executeEdit(eventData: Event7FormTypeWithId) {
       axios({
         method: "PUT",
         url: EventsUrl + eventData.id,
@@ -148,7 +147,7 @@ export function EventFormDialog({
   }
 
   return (
-    <form {...methods}>
+    <form onSubmit={onFormSubmitted} {...methods}>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{isEdit ? EditEventTitle : CreateEventTitle}</DialogTitle>
         <DialogContent className="w-full sm:w-[600px]">
@@ -199,9 +198,10 @@ export function EventFormDialog({
             Cancel
           </Button>
           <Button
+            type="submit"
+            onClick={methods.handleSubmit(onFormSubmitted)}
             aria-label="Confirm"
             disabled={loading}
-            onClick={onConfirmClicked}
             data-testid="confirm-create-edit"
           >
             {loading ? <CircularProgress size={24} /> : "Confirm"}
