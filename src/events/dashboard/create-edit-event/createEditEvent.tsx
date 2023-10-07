@@ -156,14 +156,14 @@ export function EventFormDialog({
     <Form control={methods.control}>
       <Dialog open={open} fullScreen={fullScreen} onClose={handleClose}>
         <DialogTitle>{isEdit ? EditEventTitle : CreateEventTitle}</DialogTitle>
-        <DialogContent className="w-full justify-center md:w-[600px]">
-          {(error || availableTypesError) && (
-            <Alert severity="error">
-              <AlertTitle>Error</AlertTitle>
-              {error ? error : availableTypesError}
-            </Alert>
-          )}
-          <div className="flex gap-6 w-full h-full flex-col">
+        <DialogContent className="w-full justify-center md:w-[600px] pt-6">
+          <div className="flex gap-6 w-full h-full flex-col pt-4">
+            {(error || availableTypesError) && (
+              <Alert severity="error">
+                <AlertTitle>Error</AlertTitle>
+                {error ? error : availableTypesError}
+              </Alert>
+            )}
             <ControlledInput
               name="name"
               label="Name"
