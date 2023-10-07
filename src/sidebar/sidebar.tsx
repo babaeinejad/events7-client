@@ -7,22 +7,15 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import MouseIcon from "@mui/icons-material/Mouse";
 import ListItemText from "@mui/material/ListItemText";
-import { IconButton } from "@mui/material";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 export type IProps = {
   showSideBar: boolean;
   onCloseSideBar: () => void;
 };
-export function AppSidebar({ showSideBar, onCloseSideBar }: IProps) {
+export function AppSidebar({ showSideBar }: IProps) {
   const drawerWidth = 240;
 
   const drawer = (
     <div className="pt-14">
-      <div className="flex justify-end sm:hidden">
-        <IconButton onClick={onCloseSideBar} aria-label="Close Sidebar">
-          {<ChevronLeftIcon />}
-        </IconButton>
-      </div>
       <Divider />
       <List>
         <ListItem disablePadding>
@@ -44,7 +37,7 @@ export function AppSidebar({ showSideBar, onCloseSideBar }: IProps) {
   return (
     <Box
       component="nav"
-      sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+      sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
       aria-label="mailbox folders"
     >
       <Drawer
@@ -54,7 +47,7 @@ export function AppSidebar({ showSideBar, onCloseSideBar }: IProps) {
           keepMounted: true,
         }}
         sx={{
-          display: { xs: "block", sm: "none" },
+          display: { xs: "block", md: "none" },
           "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
         }}
       >
@@ -63,7 +56,7 @@ export function AppSidebar({ showSideBar, onCloseSideBar }: IProps) {
       <Drawer
         variant="permanent"
         sx={{
-          display: { xs: "none", sm: "block" },
+          display: { xs: "none", md: "block" },
           "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
         }}
         open

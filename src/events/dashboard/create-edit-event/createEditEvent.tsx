@@ -23,8 +23,9 @@ import { useEffect, useState } from "react";
 import { OptionItem } from "shared-components/form/types";
 import { ControlledSlider } from "shared-components/form/controlled-form-elements/controlledSlider";
 import { EventsUrl } from "events/dashboard/consts";
-import { Alert, AlertTitle, CircularProgress } from "@mui/material";
+import { Alert, AlertTitle, CircularProgress, useTheme } from "@mui/material";
 import axios from "axios";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 interface IProps {
   open: boolean;
@@ -40,6 +41,8 @@ export function EventFormDialog({
   itemEditted,
   itemCreated,
 }: IProps) {
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
   const [eventsTypeOptions, setEventsTypeOptions] = useState<OptionItem[]>([]);
   const isEdit = hasIdProperty(data) ? data?.id : false;
   const methods = useForm<Event7FormType>({
@@ -151,16 +154,16 @@ export function EventFormDialog({
 
   return (
     <Form control={methods.control}>
-      <Dialog open={open} onClose={handleClose}>
+      <Dialog open={open} fullScreen={fullScreen} onClose={handleClose}>
         <DialogTitle>{isEdit ? EditEventTitle : CreateEventTitle}</DialogTitle>
-        <DialogContent className="w-full sm:w-[600px]">
+        <DialogContent className="w-full justify-center md:w-[600px]">
           {(error || availableTypesError) && (
             <Alert severity="error">
               <AlertTitle>Error</AlertTitle>
               {error ? error : availableTypesError}
             </Alert>
           )}
-          <div className="flex gap-6 mt-4 w-full h-full flex-col">
+          <div className="flex gap-6 w-full h-full flex-col">
             <ControlledInput
               name="name"
               label="Name"
