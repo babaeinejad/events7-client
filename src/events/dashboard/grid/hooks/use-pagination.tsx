@@ -1,23 +1,18 @@
 import { useEffect, useState } from "react";
-import { hasData } from "shared-components/types";
-import { hasIdProperty } from "./../../events/types";
+import { hasEvents, hasIdProperty, hasNextPage, hasData } from "events/types";
+import { AxiosResponse } from "axios";
 
-interface IProps<DataType> {
-  fetchNextPageData: (cursor: string) => Promise<DataType>;
-  pageSize: number;
+interface IProps<T> {
+  fetchNextPageData: (cursor: string) => Promise<AxiosResponse<T>>;
 }
-export function usePagination<DataType>({
-  pageSize,
-  fetchNextPageData,
-}: IProps<DataType>) {
+export function usePagination<T, DataType>({ fetchNextPageData }: IProps<T>) {
   const [pages, setPages] = useState<{
-    [num: number]: DataType[];
+    [num: number]: T;
   }>({});
   const [currentPageData, setCurrentPageData] = useState<DataType[]>([]);
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState(0);
-  const [cursor, setCursor] = useState("0");
   const [isLastPage, setIsLastPage] = useState(false);
 
   useEffect(() => {
@@ -27,34 +22,38 @@ export function usePagination<DataType>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
-  function checkLastPage(data: DataType[]) {
-    if (data.length < pageSize) {
-      setIsLastPage(true);
-    }
+  function getCursor() {
+    const lastItem = currentPageData[currentPageData?.length - 1];
+    return hasIdProperty(lastItem) ? lastItem.id : "0";
   }
   function goToNextPage() {
+    const cursor = getCursor();
     if (pages[currentPage + 1]) {
       setError("");
-      checkLastPage(pages[currentPage + 1]);
       setCurrentPage((prev) => prev + 1);
-      setCurrentPageData(pages[currentPage + 1]);
+      setIsLastPage(currentPage < Object.keys(pages).length);
+      const currentPageData = pages[currentPage + 1];
+      if (hasEvents(currentPageData)) {
+        setCurrentPageData(currentPageData.events);
+      }
       return;
     }
+
     setLoading(true);
     fetchNextPageData(cursor)
       .then((res) => {
         if (hasData(res)) {
-          if (hasIdProperty(res.data[res.data.length - 1])) {
+          if (hasEvents(res.data) && hasNextPage(res.data)) {
+            const { events, nextPageAvailable } = res.data;
             setError("");
-            checkLastPage(res.data);
+            setIsLastPage(!nextPageAvailable);
             setPages((prev) => ({
               ...prev,
               [currentPage + 1]: res.data,
             }));
-            setCursor("" + res.data[res.data.length - 1].id);
+            setCurrentPageData(events);
+            setCurrentPage((prev) => prev + 1);
           }
-          setCurrentPageData(res.data);
-          setCurrentPage((prev) => prev + 1);
         }
       })
       .catch((err) => {
@@ -68,7 +67,10 @@ export function usePagination<DataType>({
   function goToPreviousPage() {
     if (currentPage > 1) {
       setIsLastPage(false);
-      setCurrentPageData(pages[currentPage - 1]);
+      const currentPageData = pages[currentPage - 1];
+      if (hasEvents(currentPageData)) {
+        setCurrentPageData(currentPageData.events);
+      }
       setCurrentPage((prev) => prev - 1);
     }
   }

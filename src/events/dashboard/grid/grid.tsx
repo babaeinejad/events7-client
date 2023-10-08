@@ -5,7 +5,6 @@ import {
   deleteConfirmationMessage,
   EventsUrl,
   HIGH_PRIORITY,
-  PAGE_SIZE,
 } from "events/dashboard/consts";
 import { useEffect, useRef, useState, useMemo } from "react";
 import EventPriorityCellRenderer from "events/dashboard/grid/cell-renderers/eventPriorityCellRenderer";
@@ -20,7 +19,7 @@ import classNames from "classnames";
 import { Alert, AlertTitle, Button, useTheme } from "@mui/material";
 import axios from "axios";
 import { hasIdProperty } from "events/types";
-import { usePagination } from "shared-components/hooks/use-pagination";
+import { usePagination } from "events/dashboard/grid/hooks/use-pagination";
 
 export function EventsGrid() {
   const theme = useTheme();
@@ -41,15 +40,21 @@ export function EventsGrid() {
     loading: fetchNextPageLoading,
     goToNextPage,
     goToPreviousPage,
-  } = usePagination({
-    pageSize: PAGE_SIZE,
+  } = usePagination<
+    {
+      events: Event7FormTypeWithId[];
+      nextPageAvailable: boolean;
+    },
+    Event7FormTypeWithId[]
+  >({
     fetchNextPageData,
   });
 
-  console.log(currentPage);
-
   function fetchNextPageData(cursor: string) {
-    return axios.get(EventsUrl + `cursored/${cursor}`);
+    return axios.get<{
+      events: Event7FormTypeWithId[];
+      nextPageAvailable: boolean;
+    }>(EventsUrl + `cursored/${cursor}`);
   }
 
   useEffect(() => {
@@ -225,7 +230,7 @@ export function EventsGrid() {
           className="w-full h-full"
           rowData={currentPageData}
           columnDefs={columnDef}
-          defaultColDef={{ sortable: true }}
+          defaultColDef={{ sortable: false }}
           onGridReady={autoSizeColumns}
           getRowId={getRowId}
           animateRows
