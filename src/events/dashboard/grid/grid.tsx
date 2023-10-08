@@ -6,7 +6,7 @@ import {
   EventsUrl,
   HIGH_PRIORITY,
 } from "events/dashboard/consts";
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo, useContext } from "react";
 import EventPriorityCellRenderer from "events/dashboard/grid/cell-renderers/eventPriorityCellRenderer";
 import { Confirmation } from "shared-components/confirmation";
 import { EventFormDialog } from "events/dashboard/create-edit-event/createEditEvent";
@@ -20,6 +20,10 @@ import { Alert, AlertTitle, Button, useTheme } from "@mui/material";
 import axios from "axios";
 import { hasIdProperty } from "events/types";
 import { usePagination } from "events/dashboard/grid/hooks/use-pagination";
+import {
+  EventsContext,
+  EventsContextType,
+} from "events/context/events-context";
 
 export function EventsGrid() {
   const theme = useTheme();
@@ -31,31 +35,16 @@ export function EventsGrid() {
   const [error, setError] = useState("");
   const gridRef = useRef<AgGridReact | null>(null);
   const [loading, setLoading] = useState(false);
-
   const {
-    currentPage,
-    currentPageData,
-    isLastPage,
+    deleteEvent,
+    createEvent,
+    updateEvent,
     error: fetchNextPageError,
     loading: fetchNextPageLoading,
-    goToNextPage,
-    goToPreviousPage,
-  } = usePagination<
-    {
-      events: Event7FormTypeWithId[];
-      nextPageAvailable: boolean;
-    },
-    Event7FormTypeWithId[]
-  >({
-    fetchNextPageData,
-  });
-
-  function fetchNextPageData(cursor: string) {
-    return axios.get<{
-      events: Event7FormTypeWithId[];
-      nextPageAvailable: boolean;
-    }>(EventsUrl + `cursored/${cursor}`);
-  }
+    lastPage,
+  } = useContext(EventsContext) as EventsContextType;
+  const { currentPage, currentPageData, goToNextPage, goToPreviousPage } =
+    usePagination();
 
   useEffect(() => {
     if (gridRef?.current?.api) {
@@ -132,6 +121,7 @@ export function EventsGrid() {
             const item = gridRef?.current?.api.getRowNode(result.data.id);
             if (item) {
               gridRef.current.api.applyTransaction({ remove: [item.data] });
+              deleteEvent(result.data, currentPage);
             }
           }
         })
@@ -155,6 +145,7 @@ export function EventsGrid() {
   function onEditted(item: Event7FormTypeWithId) {
     setOpenEventFormDialog(false);
     if (item && gridRef?.current?.api) {
+      updateEvent(item, currentPage);
       gridRef.current.api.applyTransaction({ update: [item] });
     }
   }
@@ -162,6 +153,7 @@ export function EventsGrid() {
   function onCreated(item: Event7FormType) {
     setOpenEventFormDialog(false);
     if (item && gridRef?.current?.api) {
+      createEvent(item);
       gridRef.current.api.applyTransaction({ add: [item] });
       const newIndex = gridRef.current.api.getDisplayedRowCount() - 1;
       gridRef.current.api.ensureIndexVisible(newIndex, "bottom");
@@ -253,7 +245,7 @@ export function EventsGrid() {
             onClick={goToNextPage}
             autoFocus
             aria-label="Next"
-            disabled={isLastPage}
+            disabled={lastPage > 0 && lastPage === currentPage}
           >
             Next page
           </Button>
