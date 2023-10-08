@@ -52,7 +52,7 @@ now you should be able to preview the app in the following URL:
 
 `http://localhost:4173`
 
-### With local nestjs server
+### With local Nestjs server
 
 1. make sure that the server is running locally
 
