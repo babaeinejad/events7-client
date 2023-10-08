@@ -19,7 +19,7 @@ beforeAll(() => {
       type: "APP",
     },
   ];
-  mock.onGet(EventsUrl).reply(200, eventsMockData);
+  mock.onGet(EventsUrl + "cursored/0").reply(200, eventsMockData);
 });
 
 describe("Grid screen", () => {
