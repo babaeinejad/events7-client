@@ -1,7 +1,12 @@
 import { AgGridReact } from "ag-grid-react";
 import { ColDef, GetRowIdParams, RowClassRules } from "ag-grid-community";
 import EventActionsCellRenderer from "events/dashboard/grid/cell-renderers/eventActionsCellRenderer";
-import { deleteConfirmationMessage, EventsUrl } from "events/dashboard/consts";
+import {
+  deleteConfirmationMessage,
+  EventsUrl,
+  HIGH_PRIORITY,
+  PAGE_SIZE,
+} from "events/dashboard/consts";
 import { useEffect, useRef, useState, useMemo } from "react";
 import EventPriorityCellRenderer from "events/dashboard/grid/cell-renderers/eventPriorityCellRenderer";
 import { Confirmation } from "shared-components/confirmation";
@@ -12,9 +17,10 @@ import {
 } from "events/dashboard/create-edit-event/formSchema";
 import { ActionBar } from "../actionbar/actionbar";
 import classNames from "classnames";
-import { Alert, AlertTitle, useTheme } from "@mui/material";
+import { Alert, AlertTitle, Button, useTheme } from "@mui/material";
 import axios from "axios";
 import { hasIdProperty } from "events/types";
+import { usePagination } from "shared-components/hooks/use-pagination";
 
 export function EventsGrid() {
   const theme = useTheme();
@@ -25,34 +31,35 @@ export function EventsGrid() {
   >(null);
   const [error, setError] = useState("");
   const gridRef = useRef<AgGridReact | null>(null);
-  const [events, setEvents] = useState<Event7FormType[]>([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    setLoading(true);
-    axios
-      .get(EventsUrl)
-      .then((response) => {
-        if (response.data) {
-          setEvents(response.data);
-        }
-      })
-      .catch((err) => {
-        setError(err?.response?.data?.message || err.message);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+  const {
+    currentPage,
+    currentPageData,
+    isLastPage,
+    error: fetchNextPageError,
+    loading: fetchNextPageLoading,
+    goToNextPage,
+    goToPreviousPage,
+  } = usePagination({
+    pageSize: PAGE_SIZE,
+    fetchNextPageData,
+  });
+
+  console.log(currentPage);
+
+  function fetchNextPageData(cursor: string) {
+    return axios.get(EventsUrl + `cursored/${cursor}`);
+  }
 
   useEffect(() => {
     if (gridRef?.current?.api) {
       gridRef?.current?.api.hideOverlay();
-      if (loading) {
+      if (loading || fetchNextPageLoading) {
         gridRef?.current?.api.showLoadingOverlay();
       }
     }
-  }, [loading]);
+  }, [loading, fetchNextPageLoading]);
 
   function handleDeleteEvent(event: Event7FormType) {
     setSelectedEvent(event);
@@ -163,9 +170,11 @@ export function EventsGrid() {
   const rowClassRules: RowClassRules<Event7FormType> = useMemo(
     () => ({
       "red-rows": (params) =>
-        (params?.data?.priority || 1) > 7 && theme.palette.mode === "light",
+        (params?.data?.priority || 1) > HIGH_PRIORITY &&
+        theme.palette.mode === "light",
       "dark-red-rows": (params) =>
-        (params?.data?.priority || 1) > 7 && theme.palette.mode === "dark",
+        (params?.data?.priority || 1) > HIGH_PRIORITY &&
+        theme.palette.mode === "dark",
     }),
     [theme.palette.mode]
   );
@@ -196,7 +205,6 @@ export function EventsGrid() {
         data={selectedEvent!}
         handleClose={handleCloseEventFormDialog}
       />
-      {/* // TODO: Implement infinite scroll pagination once the ag-grid license is purchased!*/}
       <div
         className={classNames(
           "ag-theme-alpine p-2 flex flex-col  h-[calc(100%-36px)]",
@@ -206,16 +214,16 @@ export function EventsGrid() {
           }
         )}
       >
-        {error && (
+        {(error || fetchNextPageError) && (
           <Alert severity="error">
             <AlertTitle>Error</AlertTitle>
-            {error}
+            {error ? error : fetchNextPageError}
           </Alert>
         )}
         <AgGridReact
           ref={gridRef}
           className="w-full h-full"
-          rowData={events}
+          rowData={currentPageData}
           columnDefs={columnDef}
           defaultColDef={{ sortable: true }}
           onGridReady={autoSizeColumns}
@@ -224,8 +232,27 @@ export function EventsGrid() {
           enableCellChangeFlash
           rowClassRules={rowClassRules}
           pagination
-          paginationAutoPageSize
+          suppressPaginationPanel
         />
+        <div className="flex h-12 justify-between items-center">
+          <Button
+            variant="outlined"
+            onClick={goToPreviousPage}
+            disabled={currentPage <= 1}
+            aria-label="Previous"
+          >
+            Previous page
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={goToNextPage}
+            autoFocus
+            aria-label="Next"
+            disabled={isLastPage}
+          >
+            Next page
+          </Button>
+        </div>
       </div>
     </>
   );
