@@ -34,6 +34,7 @@ export function usePagination<DataType>({
   }
   function goToNextPage() {
     if (pages[currentPage + 1]) {
+      setError("");
       checkLastPage(pages[currentPage + 1]);
       setCurrentPage((prev) => prev + 1);
       setCurrentPageData(pages[currentPage + 1]);
@@ -44,6 +45,7 @@ export function usePagination<DataType>({
       .then((res) => {
         if (hasData(res)) {
           if (hasIdProperty(res.data[res.data.length - 1])) {
+            setError("");
             checkLastPage(res.data);
             setPages((prev) => ({
               ...prev,
@@ -52,6 +54,7 @@ export function usePagination<DataType>({
             setCursor("" + res.data[res.data.length - 1].id);
           }
           setCurrentPageData(res.data);
+          setCurrentPage((prev) => prev + 1);
         }
       })
       .catch((err) => {
@@ -60,7 +63,6 @@ export function usePagination<DataType>({
       .finally(() => {
         setLoading(false);
       });
-    setCurrentPage((prev) => prev + 1);
   }
 
   function goToPreviousPage() {
