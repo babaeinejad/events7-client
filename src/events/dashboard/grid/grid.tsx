@@ -1,13 +1,12 @@
 import { AgGridReact } from "ag-grid-react";
-import { ColDef, GetRowIdParams, RowClassRules } from "ag-grid-community";
-import EventActionsCellRenderer from "events/dashboard/grid/cell-renderers/eventActionsCellRenderer";
 import {
   deleteConfirmationMessage,
   EventsUrl,
-  HIGH_PRIORITY,
+  getRowClassRules,
+  getRowId,
+  GRID_COLUMN_DEF,
 } from "events/dashboard/consts";
-import { useEffect, useRef, useState, useMemo, useContext } from "react";
-import EventPriorityCellRenderer from "events/dashboard/grid/cell-renderers/eventPriorityCellRenderer";
+import { useEffect, useRef, useState, useContext } from "react";
 import { Confirmation } from "shared-components/confirmation";
 import { EventFormDialog } from "events/dashboard/create-edit-event/createEditEvent";
 import {
@@ -19,7 +18,6 @@ import classNames from "classnames";
 import { Alert, AlertTitle, Button, useTheme } from "@mui/material";
 import axios from "axios";
 import { hasIdProperty } from "events/types";
-import { usePagination } from "events/dashboard/grid/hooks/use-pagination";
 import {
   EventsContext,
   EventsContextType,
@@ -35,6 +33,7 @@ export function EventsGrid() {
   const [error, setError] = useState("");
   const gridRef = useRef<AgGridReact | null>(null);
   const [loading, setLoading] = useState(false);
+
   const {
     deleteEvent,
     createEvent,
@@ -42,10 +41,11 @@ export function EventsGrid() {
     error: fetchNextPageError,
     loading: fetchNextPageLoading,
     lastPage,
+    currentPage,
+    currentPageData,
+    goToNextPage,
+    goToPreviousPage,
   } = useContext(EventsContext) as EventsContextType;
-  const { currentPage, currentPageData, goToNextPage, goToPreviousPage } =
-    usePagination();
-
   useEffect(() => {
     if (gridRef?.current?.api) {
       gridRef?.current?.api.hideOverlay();
@@ -53,7 +53,7 @@ export function EventsGrid() {
         gridRef?.current?.api.showLoadingOverlay();
       }
     }
-  }, [loading, fetchNextPageLoading]);
+  }, [loading, fetchNextPageLoading, gridRef]);
 
   function handleDeleteEvent(event: Event7FormType) {
     setSelectedEvent(event);
@@ -70,36 +70,7 @@ export function EventsGrid() {
     setOpenEventFormDialog(true);
   }
 
-  const columnDef: ColDef[] = [
-    { field: "id", width: 100, headerName: "ID" },
-    { field: "name", width: 120, headerName: "Event Name" },
-    { field: "type", width: 150, headerName: "Type" },
-    {
-      field: "priority",
-      width: 100,
-      headerName: "Priority",
-      cellRenderer: EventPriorityCellRenderer,
-    },
-    {
-      field: "description",
-
-      headerName: "Description",
-      flex: 2,
-    },
-    {
-      headerName: "Actions",
-      cellRenderer: EventActionsCellRenderer,
-      cellRendererParams: {
-        onEditClicked: handleEditEvent,
-        onDeleteClicked: handleDeleteEvent,
-      },
-      width: 120,
-      sortable: false,
-      pinned: "right",
-    },
-  ];
-
-  const getRowId = (params: GetRowIdParams) => params.data.id;
+  const columnDef = GRID_COLUMN_DEF(handleEditEvent, handleDeleteEvent);
 
   function autoSizeColumns() {
     if (gridRef?.current?.api) {
@@ -117,11 +88,11 @@ export function EventsGrid() {
       })
         .then((result) => {
           setError("");
+          deleteEvent(result.data, currentPage);
           if (gridRef?.current?.api && result?.data?.id) {
             const item = gridRef?.current?.api.getRowNode(result.data.id);
             if (item) {
               gridRef.current.api.applyTransaction({ remove: [item.data] });
-              deleteEvent(result.data, currentPage);
             }
           }
         })
@@ -163,24 +134,6 @@ export function EventsGrid() {
   function handleCloseEventFormDialog() {
     setOpenEventFormDialog(false);
   }
-
-  const rowClassRules: RowClassRules<Event7FormType> = useMemo(
-    () => ({
-      "red-rows": (params) =>
-        (params?.data?.priority || 1) > HIGH_PRIORITY &&
-        theme.palette.mode === "light",
-      "dark-red-rows": (params) =>
-        (params?.data?.priority || 1) > HIGH_PRIORITY &&
-        theme.palette.mode === "dark",
-    }),
-    [theme.palette.mode]
-  );
-
-  useEffect(() => {
-    if (gridRef?.current?.api) {
-      gridRef.current.api.redrawRows();
-    }
-  }, [rowClassRules]);
 
   return (
     <>
@@ -227,7 +180,7 @@ export function EventsGrid() {
           getRowId={getRowId}
           animateRows
           enableCellChangeFlash
-          rowClassRules={rowClassRules}
+          rowClassRules={getRowClassRules(theme.palette.mode)}
           pagination
           suppressPaginationPanel
         />
