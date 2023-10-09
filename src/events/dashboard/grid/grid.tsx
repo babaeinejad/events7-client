@@ -5,7 +5,6 @@ import {
   getRowClassRules,
   getRowId,
   GRID_COLUMN_DEF,
-  PAGE_SIZE,
 } from "events/dashboard/consts";
 import { useEffect, useRef, useState, useContext } from "react";
 import { Confirmation } from "shared-components/confirmation";
