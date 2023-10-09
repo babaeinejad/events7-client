@@ -5,6 +5,7 @@ import {
   getRowClassRules,
   getRowId,
   GRID_COLUMN_DEF,
+  PAGE_SIZE,
 } from "events/dashboard/consts";
 import { useEffect, useRef, useState, useContext } from "react";
 import { Confirmation } from "shared-components/confirmation";
@@ -138,6 +139,12 @@ export function EventsGrid() {
     setSelectedEvent(null);
   }
 
+  useEffect(() => {
+    if (gridRef?.current?.api) {
+      gridRef.current.api.redrawRows();
+    }
+  }, [theme.palette.mode]);
+
   return (
     <>
       <div className="h-14 flex">
@@ -201,7 +208,7 @@ export function EventsGrid() {
             onClick={goToNextPage}
             autoFocus
             aria-label="Next"
-            disabled={lastPage > 0 && lastPage === currentPage}
+            disabled={lastPage !== 0 && lastPage === currentPage}
           >
             Next page
           </Button>
