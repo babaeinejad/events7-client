@@ -66,7 +66,6 @@ export function EventsGrid() {
   }
 
   function handleCreateEvent() {
-    setSelectedEvent(null);
     setOpenEventFormDialog(true);
   }
 
@@ -88,6 +87,7 @@ export function EventsGrid() {
       })
         .then((result) => {
           setError("");
+          setSelectedEvent(null);
           deleteEvent(result.data, currentPage);
           if (gridRef?.current?.api && result?.data?.id) {
             const item = gridRef?.current?.api.getRowNode(result.data.id);
@@ -116,6 +116,7 @@ export function EventsGrid() {
   function onEditted(item: Event7FormTypeWithId) {
     setOpenEventFormDialog(false);
     if (item && gridRef?.current?.api) {
+      setSelectedEvent(null);
       updateEvent(item, currentPage);
       gridRef.current.api.applyTransaction({ update: [item] });
     }
@@ -124,6 +125,7 @@ export function EventsGrid() {
   function onCreated(item: Event7FormType) {
     setOpenEventFormDialog(false);
     if (item && gridRef?.current?.api) {
+      setSelectedEvent(null);
       createEvent(item);
       gridRef.current.api.applyTransaction({ add: [item] });
       const newIndex = gridRef.current.api.getDisplayedRowCount() - 1;
@@ -133,6 +135,7 @@ export function EventsGrid() {
 
   function handleCloseEventFormDialog() {
     setOpenEventFormDialog(false);
+    setSelectedEvent(null);
   }
 
   return (

@@ -62,10 +62,15 @@ export function EventFormDialog({
   >(null);
 
   useEffect(() => {
-    if (data) {
-      methods.reset(data);
-    }
-  }, [data, methods]);
+    methods.reset(
+      data
+        ? data
+        : {
+            ...defaultFormValue,
+            type: eventsTypeOptions[0] ? eventsTypeOptions[0].value : "",
+          }
+    );
+  }, [data, methods, eventsTypeOptions, open]);
 
   useEffect(() => {
     axios({
