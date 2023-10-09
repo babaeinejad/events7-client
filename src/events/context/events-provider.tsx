@@ -61,7 +61,7 @@ export default function EventsProvider({ children }: { children: ReactNode }) {
             setError("");
             createNewPage(events);
             if (!nextPageAvailable) {
-              setLastPage(lastLoadedPage);
+              setLastPage(currentPage + 1);
             }
           }
         }
