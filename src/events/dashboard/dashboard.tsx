@@ -1,6 +1,6 @@
 import { useTheme } from "@mui/material";
 import classNames from "classnames";
-import EventsProvider from "events/context/events-context";
+import EventsProvider from "events/context/events-provider";
 import { EventsGrid } from "events/dashboard/grid/grid";
 
 export function Dashboard() {

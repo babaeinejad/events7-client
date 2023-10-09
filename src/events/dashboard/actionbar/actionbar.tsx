@@ -12,7 +12,7 @@ export function ActionBar({ handleCreateNewEvent }: IProps) {
         color="secondary"
         onClick={handleCreateNewEvent}
         aria-label="Create New Event"
-        data-testid="create event button"
+        data-testid="createEventButton"
       >
         Create New Event
       </Button>
