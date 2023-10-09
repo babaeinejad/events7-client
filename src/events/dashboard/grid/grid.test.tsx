@@ -1,67 +1,115 @@
 import { describe, it, expect } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { EventsGrid } from "events/dashboard/grid/grid";
 import axios from "axios";
 import { EventsUrl, deleteConfirmationMessage } from "events/dashboard/consts";
 import MockAdapter from "axios-mock-adapter";
-import { EditEventTitle } from "events/dashboard/create-edit-event/consts";
+import {
+  CreateEventTitle,
+  EditEventTitle,
+} from "events/dashboard/create-edit-event/consts";
+import { ExtendedEvnet7Types } from "events/types";
+import {
+  EventsContext,
+  EventsContextType,
+} from "events/context/events-context";
+import { userEvent } from "@testing-library/user-event";
 
 const mock = new MockAdapter(axios);
-beforeAll(() => {
-  mock.reset();
-  const eventsMockData = [
+const eventsMockData = {
+  nextPageAvailable: true,
+  events: [
     {
-      id: 1,
+      id: "1",
       priority: 5,
       name: "click-event",
       description:
         "when the user clicks the button the event should be triggered",
-      type: "APP",
+      type: ExtendedEvnet7Types.CROSPROMO,
     },
-  ];
-  mock.onGet(EventsUrl + "cursored/0").reply(200, eventsMockData);
-});
+  ],
+};
+
+const mockDeleteEvent = vitest.fn();
+
+const getNewContextValue = (fields?: Partial<EventsContextType>) => {
+  return {
+    deleteEvent: mockDeleteEvent,
+    createEvent: vitest.fn(),
+    updateEvent: vitest.fn(),
+    goToPreviousPage: vitest.fn(),
+    goToNextPage: vitest.fn(),
+    error: "",
+    loading: false,
+    lastPage: 0,
+    cursor: "0",
+    currentPage: 0,
+    currentPageData: [],
+    ...fields,
+  };
+};
 
 describe("Grid screen", () => {
-  it('Clicking "Create New Event" button opens a dialog', async () => {
-    render(<EventsGrid />);
-    const eventName = screen.getByTestId("create event button");
-    fireEvent.click(eventName);
-    const dialog = screen.queryByRole("dialog");
-    await waitFor(() => expect(dialog).toBeInTheDocument());
+  beforeAll(() => {
+    mock.reset();
+    mock.onGet(EventsUrl + "cursored/0").reply(200, eventsMockData);
+    mock.onDelete(EventsUrl + "1").reply(200, eventsMockData);
   });
 
-  it('Clicking "Edit Event" button opens a dialog', async () => {
-    const eventsGrid = render(<EventsGrid />);
-    const loadingText = screen.getByText("Loading...");
+  const eventsGrid = (newValue?: Partial<EventsContextType>) => (
+    <EventsContext.Provider value={getNewContextValue(newValue)}>
+      <EventsGrid />
+    </EventsContext.Provider>
+  );
 
+  const waitForGridToBeInTheDOM = () => {
+    return waitFor(() => {
+      expect(document.querySelector(".ag-root-wrapper")).toBeInTheDocument();
+    });
+  };
+
+  const openDialog = async (actionButtonLabel: string) => {
+    const component = render(eventsGrid());
+    waitForGridToBeInTheDOM();
+    component.rerender(
+      eventsGrid({ loading: false, currentPageData: eventsMockData.events })
+    );
+    const actionButton = screen.getByLabelText(actionButtonLabel);
+    expect(actionButton).toBeInTheDocument();
+    await userEvent.click(actionButton);
+  };
+
+  it("show and hide loading on grid", async () => {
+    const component = render(eventsGrid());
+    waitForGridToBeInTheDOM();
+    component.rerender(eventsGrid({ loading: true }));
+    const loadingText = screen.getByText("Loading...");
     expect(loadingText).toBeInTheDocument();
+    component.rerender(
+      eventsGrid({ loading: false, currentPageData: eventsMockData.events })
+    );
     await waitFor(() => {
       expect(loadingText).not.toBeInTheDocument();
     });
-    eventsGrid.rerender(<EventsGrid />);
-    const editEventButton = screen.getByLabelText("edit the event");
-    expect(editEventButton).toBeInTheDocument();
-    fireEvent.click(editEventButton);
+  });
+
+  it('Clicking "Create New Event" button opens a dialog', async () => {
+    await openDialog("Create New Event");
     const dialog = screen.queryByRole("dialog");
-    expect(dialog).toBeInTheDocument();
-    expect(dialog).toHaveTextContent(EditEventTitle);
+    expect(dialog).toHaveTextContent(CreateEventTitle);
   });
 
   it('Clicking "Delete Event" button opens a dialog', async () => {
-    const eventsGrid = render(<EventsGrid />);
-    const loadingText = screen.getByText("Loading...");
-
-    expect(loadingText).toBeInTheDocument();
-    await waitFor(() => {
-      expect(loadingText).not.toBeInTheDocument();
-    });
-    eventsGrid.rerender(<EventsGrid />);
-    const deleteEventButton = screen.getByLabelText("delete the event");
-    expect(deleteEventButton).toBeInTheDocument();
-    fireEvent.click(deleteEventButton);
+    await openDialog("delete the event");
     const dialog = screen.queryByRole("dialog");
     expect(dialog).toBeInTheDocument();
     expect(dialog).toHaveTextContent(deleteConfirmationMessage);
+  });
+
+  it('Clicking "Edit Event" button opens a dialog', async () => {
+    await openDialog("edit the event");
+    const dialog = screen.queryByRole("dialog");
+    expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveTextContent(EditEventTitle);
   });
 });
