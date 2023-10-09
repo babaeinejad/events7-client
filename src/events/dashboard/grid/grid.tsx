@@ -138,6 +138,12 @@ export function EventsGrid() {
     setSelectedEvent(null);
   }
 
+  useEffect(() => {
+    if (gridRef?.current?.api) {
+      gridRef.current.api.redrawRows();
+    }
+  }, [theme.palette.mode]);
+
   return (
     <>
       <div className="h-14 flex">
