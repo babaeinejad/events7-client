@@ -63,7 +63,6 @@ export function EventFormDialog({
 
   useEffect(() => {
     if (data) {
-      console.log("data is: ", data);
       methods.reset(data);
     }
   }, [data, methods]);

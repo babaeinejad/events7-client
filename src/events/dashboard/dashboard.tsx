@@ -1,5 +1,6 @@
 import { useTheme } from "@mui/material";
 import classNames from "classnames";
+import EventsProvider from "events/context/events-provider";
 import { EventsGrid } from "events/dashboard/grid/grid";
 
 export function Dashboard() {
@@ -11,7 +12,9 @@ export function Dashboard() {
         "bg-dark-900": theme.palette.mode === "dark",
       })}
     >
-      <EventsGrid />
+      <EventsProvider>
+        <EventsGrid />
+      </EventsProvider>
     </div>
   );
 }
